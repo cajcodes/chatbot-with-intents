@@ -1,7 +1,7 @@
 # Enigmatic AI Chatbot
 This project is an interactive chatbot that aims to tease and tantalize users with hints about an upcoming breakthrough in cutting-edge AI integration. The chatbot is designed to be enigmatic, providing concise and coy responses to user inquiries.
 
-![Screenshot of chatbot closed](/screenshots/chatbot_with_intents-closed.png)[Screenshot of chatbot open](/screenshots/chatbot_with_intents-open.png)
+![Screenshot of chatbot closed](/screenshots/chatbot_with_intents-closed.png)![Screenshot of chatbot open](/screenshots/chatbot_with_intents-open.png)
 
 ## Features
 1. **Chatbot Interface**: The chatbot is displayed as a floating icon on the bottom right of the web page. Users can click the icon to expand the chatbot interface and interact with it.
