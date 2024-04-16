@@ -1,0 +1,246 @@
+<!-- Chatbot Container -->
+<div id="chatbot-container" style="position: fixed; bottom: 2%; right: 2%; z-index: 9999;">
+
+  <!-- Chatbot Image -->
+  <img id="chatbot-toggle" src="https://uploads-ssl.webflow.com/6383aec1428da049fa258d97/64481ed34be20993fd0515f9_orange%20robot.svg" alt="Enigmatic Chatbot" style="width: 100px; height: 100px; border-radius: 50%; cursor: pointer;">
+
+  <!-- Chatbot Toggle Text -->
+  <div id="chatbot-toggle-text" style="display: block; position: absolute; bottom: 110%; left: 50%; transform: translateX(-50%); background-color: #ff6138; padding: 5px 10px; border-radius: 10px; font-size: 16px; color: white; position: relative;">
+  Unlock clues!
+</div>
+
+  <!-- Chatbot Close Icon -->
+  <div id="chatbot-close" style="display: none; position: absolute; top: 0; right: 0; width: 40px; height: 40px; background-color: #ff6138; border-radius: 50%; text-align: center; line-height: 40px; color: white; font-size: 22px; font-weight: bold; cursor: pointer; margin: 3px;">×</div>
+  
+  <!-- Chatbot Messages -->
+  <div id="chatbot-messages" style="display: none; width: 80vw; max-width: 600px; height: 50vh; max-height: 400px; background-color: white; border: 1px solid #ccc; padding: 30px; overflow-y: auto; border-radius: 8px; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);">
+    <div id="assistant-message" style="color: #1d4e89;">Greetings, curious one! I am your enigmatic guide to the future of digital networking. Unravel the mystery by asking me for hints, but remember, the full revelation awaits our grand launch. Want to be among the first to know? Sign up now!</div>
+    <div id="typing-indicator" style="display: none; position: absolute; bottom: 90px; left: 5px; background-color: #ff6138; color: #ffffff; font-size: 18px; padding: 5px 10px; border-radius: 12px;">I'm typing...</div>
+  </div>
+  
+  <!-- Chatbot Input Form -->
+  <form id="chatbot-form" style="display: none; margin-top: 20px;">
+    <input id="chatbot-input" type="text" style="flex-grow: 1; padding: 12px; font-size: 18px; border: 1px solid #ccc; border-radius: 6px; margin-right: 10px;" placeholder="Type your message..." />
+<button type="submit" style="padding: 12px 24px; background-color: #ff6138; color: white; border: none; font-size: 18px; border-radius: 6px;">Send</button>
+  </form>
+</div>
+<style>
+  #chatbot-toggle-text {
+    display: block;
+    position: absolute;
+    top: -140px;
+    left: 50%;
+    transform: translateX(-50%);
+    background-color: #ff6138;
+    padding: 5px 10px;
+    border-radius: 10px;
+    font-size: 16px;
+    color: white;
+    position: relative;
+  }
+
+  #chatbot-toggle-text::before {
+    content: "";
+    position: absolute;
+    bottom: -5px;
+    left: 50%;
+    transform: translateX(-50%) rotate(225deg);
+    border-width: 5px 5px 0 0;
+    border-style: solid;
+    border-color: #ff6138 transparent transparent transparent;
+  }
+
+  @media screen and (max-width: 480px) {
+    #chatbot-container {
+      bottom: 5%;
+      right: 5%;
+    }
+
+    #chatbot-toggle {
+      width: 80px;
+      height: 80px;
+    }
+
+    #chatbot-toggle-text {
+      bottom: 300%;
+      font-size: 14px;
+      padding: 4px 8px;
+    }
+
+    #chatbot-messages {
+      display: none;
+      width: 100%; /* set width to 100% on mobile */
+      max-width: 600px;
+      height: 80vh;
+      max-height: 95vh;
+      background-color: white;
+      border: 1px solid #ccc;
+      padding: 30px;
+      overflow-y: auto;
+      border-radius: 8px;
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    }
+    
+    #chatbot-form {
+      display: none;
+      margin-top: 20px;
+      width: 100%;
+    }
+  }
+</style>
+
+<!-- Remaining script -->
+<script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+<script>
+  const chatbotContainer = document.getElementById("chatbot-container");
+  const chatbotToggle = document.getElementById("chatbot-toggle");
+  const chatbotClose = document.getElementById("chatbot-close");
+  const chatbotForm = document.getElementById("chatbot-form");
+  const chatbotInput = document.getElementById("chatbot-input");
+  const chatbotToggleText = document.getElementById("chatbot-toggle-text");
+  const chatbotMessages = document.getElementById("chatbot-messages");
+
+  function showChat() {
+    chatbotToggle.style.display = "none";
+    chatbotClose.style.display = "block";
+    chatbotMessages.style.display = "block";
+    chatbotForm.style.display = "flex";
+    chatbotToggleText.style.display = "none";
+  }
+
+  function hideChat() {
+    chatbotToggle.style.display = "block";
+    chatbotClose.style.display = "none";
+    chatbotMessages.style.display = "none";
+    chatbotForm.style.display = "none";
+    chatbotToggleText.style.display = "block";
+  }
+
+  chatbotToggle.addEventListener("click", showChat);
+  chatbotClose.addEventListener("click", hideChat);
+
+  let conversationHistory = [
+    {
+      role: "system",
+      content:
+        "The current year is 2023. Welcome, I am your Enigmatic Assistant! My purpose is to tantalize you with hints of an upcoming breakthrough in cutting-edge AI integration, while keeping my responses brief and to the point. Though I'm well-versed in AI and the technology behind me, I must keep some secrets until the grand reveal. Feel free to inquire, but remember, my responses will be coy, teasing, and concise. ALWAYS very concise. To be among the first to know, sign up for updates and don't forget to follow us on social media and check out our blog!",
+    },
+  ];
+
+  async function sendMessageToAssistant(userMessage) {
+  const typingIndicator = document.getElementById("typing-indicator");
+
+  try {
+    // Show typing indicator
+    typingIndicator.style.display = "block";
+
+    // Add the user message to the conversation history
+    conversationHistory.push({ role: "user", content: userMessage });
+
+    let assistantResponse;
+
+    if (userMessage.toLowerCase().includes("hint") || userMessage.toLowerCase().includes("clue")) {
+      assistantResponse = respondToMessage(userMessage);
+    } else {
+      const response = await axios.post(
+        "http://localhost:1234/v1/chat/completions",
+        {
+          model: "NousResearch/Hermes-2-Pro-Mistral-7B-GGUF",
+          messages: conversationHistory,
+          temperature: 0.7,
+        },
+        {
+          headers: {
+            "Content-Type": "application/json",
+            "Authorization": "Bearer lm-studio",
+          },
+        }
+      );
+
+      assistantResponse = response.data.choices[0].message.content;
+    }
+
+    // Add the assistant message to the conversation history
+    conversationHistory.push({
+      role: "assistant",
+      content: assistantResponse,
+    });
+
+    // Hide typing indicator
+    typingIndicator.style.display = "none";
+
+    return assistantResponse;
+  } catch (error) {
+    console.error(error);
+
+    // Hide typing indicator
+    typingIndicator.style.display = "none";
+
+    return "Error: Unable to process your request.";
+  }
+}
+
+  function addMessageToContainer(role, message, container) {
+  const messageElement = document.createElement("div");
+  const typingIndicator = document.getElementById("typing-indicator");
+  messageElement.textContent = `${role}: ${message}`;
+  messageElement.style.color = role === "Assistant" ? "#1d4e89" : "#333333";
+  container.appendChild(messageElement);
+
+  // Check if typingIndicator is a child of the container
+  if (typingIndicator.parentElement === container) {
+    container.insertBefore(messageElement, typingIndicator);
+  } else {
+    container.appendChild(messageElement);
+  }
+
+  container.scrollTop = container.scrollHeight;
+}
+
+  // Add the predefined hints and conditions
+  const hints = [
+    "With me in hand, you'll make connections grand; a digital key that opens the door, to networking success and so much more.",
+    "A novel creation, a fusion divine, I merge the power of AI with a design so fine; guess my purpose and you shall see, a future of seamless connectivity.",
+    "My surface is smooth, my shape quite sleek, I'm here to help whenever you seek; a companion for your networking spree, can you uncover the secret of me?",
+    "A spark of AI, a touch of class, I'll help you stand out in every mass; a simple card yet oh so smart, can you decipher my mystic art?",
+    "With every interaction, I grow and learn, evolving the way people take their turn; a modern twist on an age-old tool, solving my riddle makes you no fool."
+  ];
+
+  function getRandomHint() {
+    return hints[Math.floor(Math.random() * hints.length)];
+  }
+
+  function respondToMessage(userMessage) {
+  userMessage = userMessage.toLowerCase();
+
+  if (userMessage.includes("hint")) {
+    return hints[Math.floor(Math.random() * hints.length)];
+  } else if (userMessage.includes("clue") || userMessage.includes("riddle")) {
+    return "I'm a creation of AI, my origins are vast; the product of AI, from the future, not the past. I'm a local LLM, a version quite new, can you unravel the mystery of what I'm designed to do?";
+  } else if (userMessage.includes("signup") || userMessage.includes("sign up")) {
+    return "To learn my secrets and be the first to know, sign up for updates and watch our progress grow.";
+  } else {
+    return "My purpose remains a riddle, a secret to keep, but if you sign up for updates, soon you shall reap. My true nature hidden, my hints here to tease, sign up and follow our socials, for they may hold the keys.";
+  }
+}
+
+  chatbotForm.addEventListener("submit", async function (event) {
+    event.preventDefault();
+
+    const userMessage = chatbotInput.value.trim();
+    if (userMessage === "") return;
+
+    addMessageToContainer("User", userMessage, chatbotMessages);
+
+    // Clear the input field
+    chatbotInput.value = "";
+
+    try {
+      const assistantResponse = await sendMessageToAssistant(userMessage);
+      addMessageToContainer("Assistant", assistantResponse, chatbotMessages);
+    } catch (error) {
+      console.error("Error in sendMessageToAssistant:", error);
+      addMessageToContainer("Assistant", "Error: Unable to process your request.", chatbotMessages);
+    }
+  });
+</script>
